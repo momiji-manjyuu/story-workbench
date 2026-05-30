@@ -1,0 +1,67 @@
+{
+  "world": {
+    "directory": "data/canon/world",
+    "schema": "schemas/world.schema.json",
+    "template": "templates/world.json"
+  },
+  "character": {
+    "directory": "data/canon/characters",
+    "schema": "schemas/character.schema.json",
+    "template": "templates/character.json"
+  },
+  "location": {
+    "directory": "data/canon/locations",
+    "schema": "schemas/location.schema.json",
+    "template": "templates/location.json"
+  },
+  "faction": {
+    "directory": "data/canon/factions",
+    "schema": "schemas/faction.schema.json",
+    "template": "templates/faction.json"
+  },
+  "item": {
+    "directory": "data/canon/items",
+    "schema": "schemas/item.schema.json",
+    "template": "templates/item.json"
+  },
+  "idea": {
+    "directory": "data/ideas/parking",
+    "schema": "schemas/idea.schema.json",
+    "template": "templates/idea.json"
+  },
+  "world_state": {
+    "directory": "data/state/world",
+    "schema": "schemas/world_state.schema.json",
+    "template": "templates/world_state.json"
+  },
+  "character_state": {
+    "directory": "data/state/characters",
+    "schema": "schemas/character_state.schema.json",
+    "template": "templates/character_state.json"
+  },
+  "item_state": {
+    "directory": "data/state/items",
+    "schema": "schemas/item_state.schema.json",
+    "template": "templates/item_state.json"
+  },
+  "scene_state": {
+    "directory": "data/state/scenes",
+    "schema": "schemas/scene_state.schema.json",
+    "template": "templates/scene_state.json"
+  },
+  "plot_thread": {
+    "directory": "data/plot/threads",
+    "schema": "schemas/plot_thread.schema.json",
+    "template": "templates/plot_thread.json"
+  },
+  "episode": {
+    "directory": "data/plot/episodes",
+    "schema": "schemas/episode.schema.json",
+    "template": "templates/episode.json"
+  },
+  "event": {
+    "directory": "data/timeline/events",
+    "schema": "schemas/event.schema.json",
+    "template": "templates/event.json"
+  }
+}

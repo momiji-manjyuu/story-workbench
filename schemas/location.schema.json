@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "truth_status",
+    "summary",
+    "region",
+    "sensory_cues",
+    "constraints"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "location" },
+    "name": { "type": "string" },
+    "truth_status": { "enum": ["canon", "provisional", "rumor", "meta"] },
+    "summary": { "type": "string" },
+    "region": { "type": "string" },
+    "sensory_cues": { "type": "array", "items": { "type": "string" } },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "linked_factions": { "type": "array", "items": { "type": "string" } },
+    "linked_items": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}

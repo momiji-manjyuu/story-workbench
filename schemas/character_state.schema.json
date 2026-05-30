@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "character_id",
+    "current_location",
+    "emotional_state",
+    "current_goal",
+    "current_obstacle",
+    "updated_at"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "character_state" },
+    "character_id": { "type": "string" },
+    "current_location": { "type": "string" },
+    "emotional_state": { "type": "string" },
+    "current_goal": { "type": "string" },
+    "current_obstacle": { "type": "string" },
+    "secrets_carried": { "type": "array", "items": { "type": "string" } },
+    "known_facts": { "type": "array", "items": { "type": "string" } },
+    "inventory": { "type": "array", "items": { "type": "string" } },
+    "recent_change": { "type": "string" },
+    "updated_at": { "type": "string" }
+  }
+}

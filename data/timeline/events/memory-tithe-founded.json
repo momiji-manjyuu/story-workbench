@@ -1,0 +1,20 @@
+{
+  "id": "memory-tithe-founded",
+  "kind": "event",
+  "name": "The Memory Tithe Was Founded",
+  "summary": "After the flood courts collapsed, Veyr created a tax system that turned certified ledgers into legal power.",
+  "date_label": "Year 371, Ashmonth 2",
+  "sort_key": 371020,
+  "participants": [
+    "office-of-weights",
+    "memory-tithe-city"
+  ],
+  "consequences": [
+    "Written proof gained more political force than spoken witness.",
+    "Archive control became the city's true lever of power."
+  ],
+  "tags": [
+    "history",
+    "law"
+  ]
+}

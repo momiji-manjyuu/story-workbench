@@ -1,0 +1,13 @@
+{
+  "id": "__ID__",
+  "kind": "location",
+  "name": "__NAME__",
+  "truth_status": "provisional",
+  "summary": "",
+  "region": "",
+  "sensory_cues": [],
+  "constraints": [],
+  "linked_factions": [],
+  "linked_items": [],
+  "tags": []
+}

@@ -1,0 +1,22 @@
+{
+  "id": "episode-001",
+  "kind": "episode",
+  "name": "Opening Breach",
+  "summary": "The first episode opens at the gate where secrecy, procedure, and old trust collide.",
+  "purpose": "Introduce the city's record economy, the stolen ledger, and the personal fracture between Mira and Jun.",
+  "scenes": [
+    "scene-001"
+  ],
+  "entry_conditions": [
+    "Mira has already stolen the ledger.",
+    "The Office has already raised inspection pressure."
+  ],
+  "target_changes": [
+    "Jun learns Mira is tied to the missing ledger.",
+    "Mira learns the inspection surge started from inside the Office."
+  ],
+  "payoff_targets": [
+    "ledger-theft"
+  ],
+  "status": "outline"
+}

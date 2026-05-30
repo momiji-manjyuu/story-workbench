@@ -1,0 +1,18 @@
+{
+  "id": "flood-prophet",
+  "kind": "idea",
+  "name": "Flood Prophet rumor",
+  "status": "parked",
+  "summary": "A witness figure that may be person, office myth, or distributed legend.",
+  "spark": "This could let the city speak back through rumor and bureaucracy.",
+  "questions": [
+    "Is the prophet a person or a title?"
+  ],
+  "possible_uses": [],
+  "linked_records": [
+    "memory-tithe-city"
+  ],
+  "next_probe": "",
+  "tags": [],
+  "last_touched": "2026-03-12T23:46:49+09:00"
+}

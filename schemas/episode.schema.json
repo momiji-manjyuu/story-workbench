@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "purpose",
+    "scenes",
+    "target_changes",
+    "status"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "episode" },
+    "name": { "type": "string" },
+    "summary": { "type": "string" },
+    "purpose": { "type": "string" },
+    "scenes": { "type": "array", "items": { "type": "string" } },
+    "entry_conditions": { "type": "array", "items": { "type": "string" } },
+    "target_changes": { "type": "array", "items": { "type": "string" } },
+    "payoff_targets": { "type": "array", "items": { "type": "string" } },
+    "status": { "enum": ["outline", "drafting", "revised", "done"] }
+  }
+}

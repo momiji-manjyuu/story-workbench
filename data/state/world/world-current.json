@@ -1,0 +1,24 @@
+{
+  "id": "world-current",
+  "kind": "world_state",
+  "name": "Current Pressure in Veyr",
+  "summary": "The city is tightening inspections after a customs barge vanished with sealed records aboard.",
+  "calendar_date": "Year 403, Floodmonth 12",
+  "active_crises": [
+    "The Office of Weights doubled inspections at Tidegate overnight.",
+    "Rumors about a missing succession record are spreading through the canal wards."
+  ],
+  "legal_pressure": [
+    "All undeclared ledgers can be seized on sight.",
+    "Inspectors are encouraged to verify seals manually if the registry looks altered."
+  ],
+  "environmental_notes": [
+    "Morning tide keeps the lower flood tunnels half-flooded.",
+    "A cold drizzle makes paper handling slower and more dangerous."
+  ],
+  "rumors_in_circulation": [
+    "The vanished barge was carrying more than tax rolls.",
+    "Someone inside the Office changed the route before the disappearance."
+  ],
+  "updated_at": "scene-001"
+}

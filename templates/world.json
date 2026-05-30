@@ -1,0 +1,12 @@
+{
+  "id": "__ID__",
+  "kind": "world",
+  "name": "__NAME__",
+  "truth_status": "provisional",
+  "summary": "",
+  "premises": [],
+  "rules": [],
+  "taboos": [],
+  "glossary": [],
+  "tags": []
+}

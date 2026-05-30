@@ -1,0 +1,11 @@
+{
+  "id": "moon-key-state",
+  "kind": "item_state",
+  "item_id": "moon-key",
+  "current_holder": "mira-quill",
+  "current_location": "tidegate",
+  "contained_by": "saltproof satchel",
+  "status": "Carried and ready if Mira has to break for the drowned archives.",
+  "visibility": "Concealed inside Mira's satchel during inspection.",
+  "updated_at": "scene-001"
+}

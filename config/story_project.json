@@ -1,0 +1,35 @@
+{
+  "project_name": "Story Workbench Seed",
+  "premise": "A canal city taxes written memory, and a stolen ledger may expose a hidden heir.",
+  "genre": "fantasy mystery",
+  "tone": [
+    "tense",
+    "literate",
+    "political",
+    "street-level"
+  ],
+  "truth_statuses": [
+    "canon",
+    "provisional",
+    "rumor",
+    "meta"
+  ],
+  "authoring_rules": [
+    "Do not solve mysteries by coincidence.",
+    "Every magic or bureaucratic exception should leave a trace.",
+    "Character decisions should change state, not just mood.",
+    "Keep scene objectives and obstacles explicit."
+  ],
+  "context_policy": {
+    "always_include": [
+      "project",
+      "world_state",
+      "scene_state",
+      "characters",
+      "location",
+      "plot_threads",
+      "timeline_events"
+    ],
+    "max_scene_characters": 6
+  }
+}

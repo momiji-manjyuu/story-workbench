@@ -1,0 +1,29 @@
+{
+  "id": "memory-tithe-city",
+  "kind": "world",
+  "name": "The Memory Tithe City",
+  "truth_status": "canon",
+  "summary": "Veyr is a canal city where written memory is taxed, audited, and quietly weaponized.",
+  "premises": [
+    "Written records hold political power because memory magic can verify ink but not speech.",
+    "The city survives on canal tolls, archive fees, and controlled access to old legal proof."
+  ],
+  "rules": [
+    "Stamped ledgers can be authenticated with brine glass and are accepted as legal truth.",
+    "Any archive moved across district lines must be declared and taxed.",
+    "Bureaucratic magic leaves physical residue that skilled inspectors can notice."
+  ],
+  "taboos": [
+    "Destroying a public ledger is treated as civic murder.",
+    "Using memory magic without a guild seal can trigger seizure of property and notes."
+  ],
+  "glossary": [
+    "Memory tithe: the tax levied on recorded private knowledge.",
+    "Brine glass: treated glass used to verify lawful ink and seals."
+  ],
+  "tags": [
+    "fantasy",
+    "mystery",
+    "bureaucracy"
+  ]
+}

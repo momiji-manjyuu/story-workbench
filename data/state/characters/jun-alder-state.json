@@ -1,0 +1,23 @@
+{
+  "id": "jun-alder-state",
+  "kind": "character_state",
+  "character_id": "jun-alder",
+  "current_location": "tidegate",
+  "emotional_state": "Tired, suspicious, and trying not to show either.",
+  "current_goal": "Catch the missing ledger or prove the surge is misdirection before blame lands on him.",
+  "current_obstacle": "His orders are inconsistent and his staff is too thin to inspect everything properly.",
+  "secrets_carried": [
+    "He believes someone in the Office altered the seal registry overnight."
+  ],
+  "known_facts": [
+    "Mira favors routes that leave a lawful paper echo.",
+    "The vanished barge did not take its assigned canal path."
+  ],
+  "inventory": [
+    "inspection notebook",
+    "brine glass lens",
+    "seal knife"
+  ],
+  "recent_change": "He quietly set aside the official seal checklist and started checking wax by touch.",
+  "updated_at": "scene-001"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "tidegate",
+  "kind": "location",
+  "name": "Tidegate",
+  "truth_status": "canon",
+  "summary": "The eastern inspection gate where canal cargo enters Veyr under watch, quotas, and damp morning light.",
+  "region": "East Canal Ward",
+  "sensory_cues": [
+    "wet ropes and brine glass",
+    "ink dust pasted to damp wood",
+    "clerks calling seal counts over the tide bells"
+  ],
+  "constraints": [
+    "Every satchel can be opened under tithe law.",
+    "Brine glass lamps reveal tampered wax if inspectors have time to use them.",
+    "Flood tunnel grates are chained above waist height at dawn."
+  ],
+  "linked_factions": [
+    "office-of-weights"
+  ],
+  "linked_items": [
+    "moon-key"
+  ],
+  "tags": [
+    "checkpoint",
+    "urban",
+    "high-pressure"
+  ]
+}

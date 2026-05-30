@@ -1,0 +1,52 @@
+{
+  "id": "jun-alder",
+  "kind": "character",
+  "name": "Jun Alder",
+  "truth_status": "canon",
+  "summary": "A customs inspector promoted too quickly after a barge disappearance put the district under scrutiny.",
+  "role": "Gate inspector whose loyalty to procedure keeps colliding with old loyalties.",
+  "aliases": [],
+  "public_profile": "Methodical, courteous, and hard to embarrass in public.",
+  "private_truth": "He suspects the inspection surge is political theater, but he is not yet willing to disobey it.",
+  "goals": [
+    "Find the missing ledger before his superiors make him the scapegoat.",
+    "Keep Tidegate orderly under impossible quotas.",
+    "Work out whether Mira is in danger or causing it."
+  ],
+  "fears": [
+    "Being blamed for another vanished shipment.",
+    "Discovering that the Office has used him as cover."
+  ],
+  "voice": {
+    "tone": "formal, patient, slightly tired",
+    "style": "careful sentences that hide pressure",
+    "taboos": [
+      "does not openly accuse without evidence",
+      "avoids casual cruelty"
+    ]
+  },
+  "relationships": [
+    {
+      "target": "mira-quill",
+      "label": "unresolved loyalty",
+      "status": "complicated",
+      "notes": "He knows her habits well enough to be dangerous."
+    },
+    {
+      "target": "office-of-weights",
+      "label": "employer under suspicion",
+      "status": "tense",
+      "notes": "His promotion came from them after the barge vanished."
+    }
+  ],
+  "facts": [
+    "He checks seals by hand when he thinks the official list is compromised.",
+    "He still carries the notebook Mira helped him set up years ago.",
+    "He wants lawful truth more than he wants approval."
+  ],
+  "tags": [
+    "inspector",
+    "foil",
+    "pressure-cooker"
+  ]
+}

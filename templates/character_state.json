@@ -1,0 +1,14 @@
+{
+  "id": "__ID__",
+  "kind": "character_state",
+  "character_id": "",
+  "current_location": "",
+  "emotional_state": "",
+  "current_goal": "",
+  "current_obstacle": "",
+  "secrets_carried": [],
+  "known_facts": [],
+  "inventory": [],
+  "recent_change": "",
+  "updated_at": ""
+}

@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "truth_status",
+    "summary",
+    "premises",
+    "rules",
+    "taboos"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "world" },
+    "name": { "type": "string" },
+    "truth_status": { "enum": ["canon", "provisional", "rumor", "meta"] },
+    "summary": { "type": "string" },
+    "premises": { "type": "array", "items": { "type": "string" } },
+    "rules": { "type": "array", "items": { "type": "string" } },
+    "taboos": { "type": "array", "items": { "type": "string" } },
+    "glossary": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}

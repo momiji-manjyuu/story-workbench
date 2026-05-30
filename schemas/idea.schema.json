@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "status",
+    "summary",
+    "spark",
+    "questions",
+    "possible_uses",
+    "linked_records",
+    "tags",
+    "last_touched"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "idea" },
+    "name": { "type": "string" },
+    "status": { "enum": ["seed", "exploring", "parked", "adopted", "rejected"] },
+    "summary": { "type": "string" },
+    "spark": { "type": "string" },
+    "questions": { "type": "array", "items": { "type": "string" } },
+    "possible_uses": { "type": "array", "items": { "type": "string" } },
+    "linked_records": { "type": "array", "items": { "type": "string" } },
+    "next_probe": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "last_touched": { "type": "string" }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "barge-vanished",
+  "kind": "event",
+  "name": "The Customs Barge Vanished",
+  "summary": "A night barge carrying sealed records disappeared before dawn, taking the succession ledger out of formal custody.",
+  "date_label": "Year 403, Floodmonth 11",
+  "sort_key": 403111,
+  "participants": [
+    "office-of-weights",
+    "jun-alder",
+    "mira-quill"
+  ],
+  "consequences": [
+    "Inspection quotas doubled at Tidegate.",
+    "Jun was promoted into direct risk instead of being told the full truth.",
+    "Mira became the only courier with a path to the drowned archive routes."
+  ],
+  "tags": [
+    "inciting-incident",
+    "cover-up"
+  ]
+}

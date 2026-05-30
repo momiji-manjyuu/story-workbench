@@ -1,0 +1,19 @@
+{
+  "id": "__ID__",
+  "kind": "scene_state",
+  "name": "__NAME__",
+  "summary": "",
+  "sort_key": 0,
+  "calendar_date": "",
+  "episode": "",
+  "pov_character": "",
+  "location": "",
+  "present_characters": [],
+  "active_threads": [],
+  "relevant_events": [],
+  "goals": [],
+  "tensions": [],
+  "facts_in_play": [],
+  "unknowns": [],
+  "exit_conditions": []
+}

@@ -1,0 +1,28 @@
+{
+  "id": "checkpoint-20260314T000009+0900-add-chronology-and-item-tracking-to-samp",
+  "created_at": "2026-03-14T00:00:09+09:00",
+  "summary": "Add chronology and item tracking to sample scene",
+  "scene_id": "scene-001",
+  "status": "active",
+  "decisions": [
+    "Added sort_key-based chronology metadata to the sample opening scene.",
+    "Started tracking the Moon-Key with an item_state snapshot."
+  ],
+  "pending_actions": [
+    "Keep future sample scenes and state snapshots aligned to sort_key ordering."
+  ],
+  "open_questions": [],
+  "touched_records": [
+    "moon-key",
+    "moon-key-state",
+    "scene-001"
+  ],
+  "idea_ids": [],
+  "artifacts": [],
+  "quality_gate": {
+    "validation_errors": 0,
+    "semantic_errors": 0,
+    "semantic_warnings": 0,
+    "semantic_notes": 0
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "calendar_date",
+    "active_crises",
+    "updated_at"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "world_state" },
+    "name": { "type": "string" },
+    "summary": { "type": "string" },
+    "calendar_date": { "type": "string" },
+    "active_crises": { "type": "array", "items": { "type": "string" } },
+    "legal_pressure": { "type": "array", "items": { "type": "string" } },
+    "environmental_notes": { "type": "array", "items": { "type": "string" } },
+    "rumors_in_circulation": { "type": "array", "items": { "type": "string" } },
+    "updated_at": { "type": "string" }
+  }
+}

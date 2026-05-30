@@ -1,0 +1,54 @@
+{
+  "id": "mira-quill",
+  "kind": "character",
+  "name": "Mira Quill",
+  "truth_status": "canon",
+  "summary": "A former archive copyist who now smuggles documents for clients who cannot survive official attention.",
+  "role": "Reluctant courier of the stolen succession ledger.",
+  "aliases": [
+    "Salt Mira"
+  ],
+  "public_profile": "A dry-witted fixer who knows how to move paper through impossible checkpoints.",
+  "private_truth": "She stole the ledger because it names a claimant her late brother died protecting.",
+  "goals": [
+    "Get the ledger into a safe archive.",
+    "Learn who ordered the customs surge.",
+    "Stay ahead of the Office of Weights."
+  ],
+  "fears": [
+    "Being forced back into licensed archive work.",
+    "Losing the ledger before she can verify the heir."
+  ],
+  "voice": {
+    "tone": "dry, controlled, observant",
+    "style": "precise phrasing with defensive humor",
+    "taboos": [
+      "does not beg",
+      "rarely speaks about her brother directly"
+    ]
+  },
+  "relationships": [
+    {
+      "target": "jun-alder",
+      "label": "former friend turned obstacle",
+      "status": "strained",
+      "notes": "Jun still wants to believe she can be trusted."
+    },
+    {
+      "target": "office-of-weights",
+      "label": "institutional enemy",
+      "status": "hostile",
+      "notes": "She knows too many of its filing habits."
+    }
+  ],
+  "facts": [
+    "She can recognize forged seal wax by smell.",
+    "She has used the flood tunnels before but does not trust them in daylight.",
+    "She carries the moon-key because it can open a drowned archive vault."
+  ],
+  "tags": [
+    "pov-candidate",
+    "smuggler",
+    "archivist"
+  ]
+}

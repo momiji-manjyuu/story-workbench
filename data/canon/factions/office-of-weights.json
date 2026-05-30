@@ -1,0 +1,30 @@
+{
+  "id": "office-of-weights",
+  "kind": "faction",
+  "name": "Office of Weights",
+  "truth_status": "canon",
+  "summary": "The civic authority that measures, taxes, and certifies goods, records, and legal transfers inside Veyr.",
+  "agenda": [
+    "Preserve state control over verified records.",
+    "Recover the missing succession ledger before it changes the political balance.",
+    "Avoid public admission that internal security failed."
+  ],
+  "methods": [
+    "sudden quota changes",
+    "selective inspections",
+    "quiet pressure on licensed archivists"
+  ],
+  "resources": [
+    "seal registries",
+    "customs staff",
+    "archive warrants"
+  ],
+  "pressure_points": [
+    "its chain of custody on the missing barge is already compromised",
+    "jun-alder may not stay compliant forever"
+  ],
+  "tags": [
+    "bureaucracy",
+    "power-center"
+  ]
+}

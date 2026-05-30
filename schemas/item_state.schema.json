@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "item_id",
+    "current_location",
+    "status",
+    "visibility",
+    "updated_at"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "item_state" },
+    "item_id": { "type": "string" },
+    "current_holder": { "type": "string" },
+    "current_location": { "type": "string" },
+    "contained_by": { "type": "string" },
+    "status": { "type": "string" },
+    "visibility": { "type": "string" },
+    "updated_at": { "type": "string" }
+  }
+}

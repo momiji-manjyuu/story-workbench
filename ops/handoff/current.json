@@ -1,0 +1,122 @@
+{
+  "generated_at": "2026-03-14T00:00:09+09:00",
+  "project_name": "Story Workbench Seed",
+  "premise": "A canal city taxes written memory, and a stolen ledger may expose a hidden heir.",
+  "latest_checkpoint": {
+    "id": "checkpoint-20260314T000009+0900-add-chronology-and-item-tracking-to-samp",
+    "created_at": "2026-03-14T00:00:09+09:00",
+    "summary": "Add chronology and item tracking to sample scene",
+    "scene_id": "scene-001",
+    "status": "active",
+    "decisions": [
+      "Added sort_key-based chronology metadata to the sample opening scene.",
+      "Started tracking the Moon-Key with an item_state snapshot."
+    ],
+    "pending_actions": [
+      "Keep future sample scenes and state snapshots aligned to sort_key ordering."
+    ],
+    "open_questions": [],
+    "touched_records": [
+      "moon-key",
+      "moon-key-state",
+      "scene-001"
+    ],
+    "idea_ids": [],
+    "artifacts": [],
+    "quality_gate": {
+      "validation_errors": 0,
+      "semantic_errors": 0,
+      "semantic_warnings": 0,
+      "semantic_notes": 0
+    }
+  },
+  "scene": {
+    "id": "scene-001",
+    "kind": "scene_state",
+    "name": "Dawn Inspection at Tidegate",
+    "summary": "Mira reaches the eastern gate with the stolen ledger and finds Jun personally checking arrivals.",
+    "sort_key": 10,
+    "calendar_date": "Year 403, Floodmonth 12",
+    "episode": "episode-001",
+    "pov_character": "mira-quill",
+    "location": "tidegate",
+    "present_characters": [
+      "mira-quill",
+      "jun-alder"
+    ],
+    "active_threads": [
+      "ledger-theft"
+    ],
+    "relevant_events": [
+      "memory-tithe-founded",
+      "barge-vanished"
+    ],
+    "goals": [
+      {
+        "actor": "mira-quill",
+        "goal": "Move the ledger past inspection without revealing its contents."
+      },
+      {
+        "actor": "jun-alder",
+        "goal": "Identify the courier carrying the missing record before the morning convoy clears."
+      }
+    ],
+    "tensions": [
+      "Jun recognizes the seal pattern on Mira's satchel.",
+      "The gate clerks are too overloaded to hide a careful inspection for long."
+    ],
+    "facts_in_play": [
+      "The ledger could prove a living succession claim.",
+      "The inspection surge began before the public knew the barge was missing."
+    ],
+    "unknowns": [
+      "Who ordered the surge before the disappearance was announced?",
+      "Can Jun be turned into an ally before he turns procedural?"
+    ],
+    "exit_conditions": [
+      "Mira passes inspection with the ledger intact.",
+      "Mira abandons the gate and takes the flood tunnels.",
+      "Jun detains her and forces the conflict into public view."
+    ]
+  },
+  "recent_decisions": [
+    "Added sort_key-based chronology metadata to the sample opening scene.",
+    "Started tracking the Moon-Key with an item_state snapshot.",
+    "Added checkpoint and handoff support for cross-session continuity.",
+    "Added structured idea parking under data/ideas/parking."
+  ],
+  "pending_actions": [
+    "Keep future sample scenes and state snapshots aligned to sort_key ordering."
+  ],
+  "open_questions": [],
+  "touched_records": [
+    "moon-key",
+    "moon-key-state",
+    "scene-001"
+  ],
+  "artifacts": [],
+  "ideas": [
+    {
+      "id": "flood-prophet",
+      "kind": "idea",
+      "name": "Flood Prophet rumor",
+      "status": "parked",
+      "summary": "A witness figure that may be person, office myth, or distributed legend.",
+      "spark": "This could let the city speak back through rumor and bureaucracy.",
+      "questions": [
+        "Is the prophet a person or a title?"
+      ],
+      "possible_uses": [],
+      "linked_records": [
+        "memory-tithe-city"
+      ],
+      "next_probe": "",
+      "tags": [],
+      "last_touched": "2026-03-12T23:46:49+09:00"
+    }
+  ],
+  "recent_checkpoint_ids": [
+    "checkpoint-20260314T000009+0900-add-chronology-and-item-tracking-to-samp",
+    "checkpoint-20260312T234710+0900-installed-write-through-workflow"
+  ]
+}

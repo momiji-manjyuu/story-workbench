@@ -1,0 +1,24 @@
+{
+  "id": "mira-quill-state",
+  "kind": "character_state",
+  "character_id": "mira-quill",
+  "current_location": "tidegate",
+  "emotional_state": "Controlled panic hidden behind routine sarcasm.",
+  "current_goal": "Get the ledger through the gate without exposing the heir claim.",
+  "current_obstacle": "Jun has stopped trusting the official seal list and is checking satchels by hand.",
+  "secrets_carried": [
+    "She stole the ledger from an Office archive annex.",
+    "Her dead brother was linked to the hidden claimant."
+  ],
+  "known_facts": [
+    "The ledger names a bloodline branch the ruling council erased.",
+    "Someone changed the inspection pattern before dawn."
+  ],
+  "inventory": [
+    "moon-key",
+    "saltproof satchel",
+    "forged transit slips"
+  ],
+  "recent_change": "She burned her old courier contact list after the archive theft.",
+  "updated_at": "scene-001"
+}

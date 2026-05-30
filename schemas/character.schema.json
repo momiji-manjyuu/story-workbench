@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "truth_status",
+    "summary",
+    "role",
+    "goals",
+    "voice",
+    "relationships",
+    "facts"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "character" },
+    "name": { "type": "string" },
+    "truth_status": { "enum": ["canon", "provisional", "rumor", "meta"] },
+    "summary": { "type": "string" },
+    "role": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string" } },
+    "public_profile": { "type": "string" },
+    "private_truth": { "type": "string" },
+    "goals": { "type": "array", "items": { "type": "string" } },
+    "fears": { "type": "array", "items": { "type": "string" } },
+    "voice": {
+      "type": "object",
+      "required": ["tone", "style", "taboos"],
+      "properties": {
+        "tone": { "type": "string" },
+        "style": { "type": "string" },
+        "taboos": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target", "label", "status"],
+        "properties": {
+          "target": { "type": "string" },
+          "label": { "type": "string" },
+          "status": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "facts": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}

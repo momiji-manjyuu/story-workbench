@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "thread_type",
+    "status",
+    "question",
+    "stakes"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "plot_thread" },
+    "name": { "type": "string" },
+    "summary": { "type": "string" },
+    "thread_type": { "type": "string" },
+    "status": { "enum": ["open", "advancing", "resolved", "abandoned"] },
+    "question": { "type": "string" },
+    "stakes": { "type": "array", "items": { "type": "string" } },
+    "introduced_in": { "type": "string" },
+    "linked_records": { "type": "array", "items": { "type": "string" } },
+    "planned_reveal": { "type": "string" },
+    "resolution_criteria": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "__ID__",
+  "kind": "faction",
+  "name": "__NAME__",
+  "truth_status": "provisional",
+  "summary": "",
+  "agenda": [],
+  "methods": [],
+  "resources": [],
+  "pressure_points": [],
+  "tags": []
+}

@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "truth_status",
+    "summary",
+    "agenda",
+    "methods",
+    "resources"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "faction" },
+    "name": { "type": "string" },
+    "truth_status": { "enum": ["canon", "provisional", "rumor", "meta"] },
+    "summary": { "type": "string" },
+    "agenda": { "type": "array", "items": { "type": "string" } },
+    "methods": { "type": "array", "items": { "type": "string" } },
+    "resources": { "type": "array", "items": { "type": "string" } },
+    "pressure_points": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}

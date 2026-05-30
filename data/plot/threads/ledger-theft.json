@@ -1,0 +1,27 @@
+{
+  "id": "ledger-theft",
+  "kind": "plot_thread",
+  "name": "Who Benefits from the Stolen Succession Ledger?",
+  "summary": "A sealed ledger naming a hidden claimant vanished from state custody and now multiple actors want it buried or exposed.",
+  "thread_type": "mystery",
+  "status": "open",
+  "question": "Who is driving the hunt for the ledger, and what happens if the claimant learns the truth first?",
+  "stakes": [
+    "A legal heir could overturn the current balance of power in Veyr.",
+    "Mira and Jun could both be destroyed by the same cover-up from opposite sides."
+  ],
+  "introduced_in": "barge-vanished",
+  "linked_records": [
+    "mira-quill",
+    "jun-alder",
+    "office-of-weights",
+    "moon-key",
+    "tidegate"
+  ],
+  "planned_reveal": "The inspection surge was staged by insiders trying to reclaim the ledger before an internal rival could weaponize it.",
+  "resolution_criteria": [
+    "Identify the faction behind the surge.",
+    "Verify whether the claimant is alive.",
+    "Force Jun to choose between procedure and truth."
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "sort_key",
+    "episode",
+    "pov_character",
+    "location",
+    "present_characters",
+    "active_threads",
+    "goals",
+    "tensions",
+    "unknowns",
+    "exit_conditions"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "scene_state" },
+    "name": { "type": "string" },
+    "summary": { "type": "string" },
+    "sort_key": { "type": "integer" },
+    "calendar_date": { "type": "string" },
+    "episode": { "type": "string" },
+    "pov_character": { "type": "string" },
+    "location": { "type": "string" },
+    "present_characters": { "type": "array", "items": { "type": "string" } },
+    "active_threads": { "type": "array", "items": { "type": "string" } },
+    "relevant_events": { "type": "array", "items": { "type": "string" } },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["actor", "goal"],
+        "properties": {
+          "actor": { "type": "string" },
+          "goal": { "type": "string" }
+        }
+      }
+    },
+    "tensions": { "type": "array", "items": { "type": "string" } },
+    "facts_in_play": { "type": "array", "items": { "type": "string" } },
+    "unknowns": { "type": "array", "items": { "type": "string" } },
+    "exit_conditions": { "type": "array", "items": { "type": "string" } }
+  }
+}

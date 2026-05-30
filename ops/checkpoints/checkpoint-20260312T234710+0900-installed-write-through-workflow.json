@@ -1,0 +1,22 @@
+{
+  "id": "checkpoint-20260312T234710+0900-installed-write-through-workflow",
+  "created_at": "2026-03-12T23:47:10+09:00",
+  "summary": "Installed write-through workflow",
+  "scene_id": null,
+  "status": "active",
+  "decisions": [
+    "Added checkpoint and handoff support for cross-session continuity.",
+    "Added structured idea parking under data/ideas/parking."
+  ],
+  "pending_actions": [
+    "Replace the seed setting and sample records with the actual story project."
+  ],
+  "open_questions": [],
+  "touched_records": [
+    "flood-prophet"
+  ],
+  "idea_ids": [
+    "flood-prophet"
+  ],
+  "artifacts": []
+}

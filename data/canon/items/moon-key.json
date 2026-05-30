@@ -1,0 +1,20 @@
+{
+  "id": "moon-key",
+  "kind": "item",
+  "name": "Moon-Key",
+  "truth_status": "canon",
+  "summary": "A tide-dark brass key that can open certain drowned archive locks when used with brine glass.",
+  "significance": "It gives Mira a way to reach hidden vaults no current clerk can legally access.",
+  "powers": [
+    "Opens pre-flood archive locks keyed to lunar brass fittings."
+  ],
+  "limits": [
+    "Works only on old civic locks.",
+    "Requires correct alignment under marked light to avoid jamming."
+  ],
+  "owner": "mira-quill",
+  "tags": [
+    "key-item",
+    "archive"
+  ]
+}

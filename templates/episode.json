@@ -1,0 +1,12 @@
+{
+  "id": "__ID__",
+  "kind": "episode",
+  "name": "__NAME__",
+  "summary": "",
+  "purpose": "",
+  "scenes": [],
+  "entry_conditions": [],
+  "target_changes": [],
+  "payoff_targets": [],
+  "status": "outline"
+}

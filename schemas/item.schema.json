@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "truth_status",
+    "summary",
+    "significance",
+    "limits"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "item" },
+    "name": { "type": "string" },
+    "truth_status": { "enum": ["canon", "provisional", "rumor", "meta"] },
+    "summary": { "type": "string" },
+    "significance": { "type": "string" },
+    "powers": { "type": "array", "items": { "type": "string" } },
+    "limits": { "type": "array", "items": { "type": "string" } },
+    "owner": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}

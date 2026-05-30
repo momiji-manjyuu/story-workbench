@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "date_label",
+    "sort_key",
+    "participants",
+    "consequences"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "kind": { "const": "event" },
+    "name": { "type": "string" },
+    "summary": { "type": "string" },
+    "date_label": { "type": "string" },
+    "sort_key": { "type": "integer" },
+    "participants": { "type": "array", "items": { "type": "string" } },
+    "consequences": { "type": "array", "items": { "type": "string" } },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  }
+}
