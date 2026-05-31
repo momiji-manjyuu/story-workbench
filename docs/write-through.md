@@ -62,6 +62,12 @@ python3 tools/story.py handoff
 only when you explicitly want brainstorming context. A `--refresh --with-ideas` run keeps
 `ops/handoff/current.*` safe and writes the idea-inclusive snapshot to `ops/handoff/ideas.*`.
 
+The safe handoff only hides structured idea details, idea ids, and idea-related touched records. It does
+not redact checkpoint free text such as summaries, decisions, pending actions, open questions, or
+artifacts. Keep speculative idea details out of those free-text fields unless they are safe to read when
+resuming; store them in `data/ideas/**` and use `handoff --with-ideas` only when brainstorming context is
+intentional.
+
 ## Files
 
 - `ops/checkpoints/*.json`: immutable turn-level snapshots

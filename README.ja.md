@@ -108,3 +108,8 @@ Markdown は設計メモや運用ルール、引き継ぎ用途に使い、設�
 引き継ぎは安全側がデフォルトです。`handoff`、checkpoint 後の更新、`ops/handoff/current.*` には
 保留中の idea の詳細を出しません。ブレスト文脈が必要な時だけ
 `python3 tools/story.py handoff --with-ideas` を使ってください。
+
+safe handoff は構造化された idea 詳細、idea ids、idea 系の touched records を隠しますが、
+checkpoint の summary / decision / pending / question / artifact などの自由記述欄までは自動で秘匿しません。
+再開時に読ませたくない仮案は checkpoint の自由記述欄に書かず、`data/ideas/**` に残してください。
+ブレスト文脈が必要な時だけ `handoff --with-ideas` を使います。

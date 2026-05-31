@@ -61,6 +61,9 @@ template checks.
 python3 tools/story.py doctor
 ```
 
+By default, idea leak findings are warnings and do not make `doctor` fail. Use
+`python3 tools/story.py doctor --strict-ideas` when you want any idea leak finding to return exit code 1.
+
 ## Practical loop
 
 1. `context`

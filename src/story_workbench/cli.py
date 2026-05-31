@@ -122,6 +122,9 @@ CONTRADICTION_GROUPS = [
     ),
 ]
 
+MIN_IDEA_MARKER_LENGTH = 4
+ASCII_MARKER_RE = re.compile(r"^[a-z0-9_-]+$", re.IGNORECASE)
+
 
 @dataclass(frozen=True)
 class KindMeta:
@@ -1632,13 +1635,24 @@ def audit_project_semantics(root: Path | None = None, lang: str = "en") -> list[
 
 def idea_markers(idea: dict[str, Any]) -> list[str]:
     markers = [idea.get("id", ""), idea.get("name", "")]
-    markers.extend(tag for tag in idea.get("tags", []) if len(tag) >= 4)
-    return unique_strings([marker for marker in markers if marker])
+    markers.extend(idea.get("tags", []))
+    cleaned = [
+        marker.strip()
+        for marker in markers
+        if isinstance(marker, str) and len(marker.strip()) >= MIN_IDEA_MARKER_LENGTH
+    ]
+    return unique_strings(cleaned)
 
 
 def marker_in_record(marker: str, record: dict[str, Any]) -> bool:
     haystack = " ".join(flatten_strings(record)).casefold()
-    return marker.casefold() in haystack
+    marker = marker.strip().casefold()
+    if len(marker) < MIN_IDEA_MARKER_LENGTH:
+        return False
+    if ASCII_MARKER_RE.fullmatch(marker):
+        pattern = rf"(?<![a-z0-9_-]){re.escape(marker)}(?![a-z0-9_-])"
+        return re.search(pattern, haystack) is not None
+    return marker in haystack
 
 
 def audit_idea_leaks(root: Path | None = None) -> list[AuditFinding]:
@@ -2230,7 +2244,7 @@ def audit_templates(root: Path | None = None) -> list[AuditFinding]:
     return findings
 
 
-def render_doctor(root: Path | None = None) -> tuple[str, int]:
+def render_doctor(root: Path | None = None, strict_ideas: bool = False) -> tuple[str, int]:
     root = project_root(root)
     validation_errors = validate_project(root)
     semantic_findings = [] if validation_errors else audit_project_semantics(root)
@@ -2240,7 +2254,8 @@ def render_doctor(root: Path | None = None) -> tuple[str, int]:
 
     semantic_errors = [finding for finding in semantic_findings if finding.severity == "ERROR"]
     template_errors = [finding for finding in template_findings if finding.severity == "ERROR"]
-    status = 1 if validation_errors or semantic_errors or template_errors else 0
+    strict_idea_errors = bool(strict_ideas and idea_findings)
+    status = 1 if validation_errors or semantic_errors or template_errors or strict_idea_errors else 0
 
     lines = ["# Doctor", ""]
     lines.append(
@@ -2252,6 +2267,9 @@ def render_doctor(root: Path | None = None) -> tuple[str, int]:
         f"{len(doc_findings)} doc link warnings, "
         f"{len(template_findings)} template findings."
     )
+    lines.append(f"Strict idea mode: {'on' if strict_ideas else 'off'}")
+    if strict_ideas:
+        lines.append("strict idea mode treats idea leak findings as failing findings.")
 
     lines.append("")
     lines.append("## Validation")
@@ -2392,7 +2410,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("threads", help="Show plot thread status and scene references")
 
-    subparsers.add_parser("doctor", help="Run validation, semantic audits, idea leak checks, docs, and template checks")
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="Run validation, semantic audits, idea leak checks, docs, and template checks",
+    )
+    doctor_parser.add_argument(
+        "--strict-ideas",
+        action="store_true",
+        help="Exit nonzero when the idea leak audit reports any findings.",
+    )
 
     stub_parser = subparsers.add_parser("stub", help="Create a stub record from a template")
     stub_parser.add_argument("kind")
@@ -2505,7 +2531,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if args.command == "doctor":
-            report, status = render_doctor()
+            report, status = render_doctor(strict_ideas=args.strict_ideas)
             print(report, end="")
             return status
 
