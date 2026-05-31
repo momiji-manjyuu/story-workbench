@@ -18,6 +18,7 @@ from story_workbench.cli import (
     audit_project_semantics,
     audit_scene_draft_text,
     audit_scene_semantics,
+    build_parser,
     build_scene_context,
     capture_idea,
     create_scene_delta,
@@ -281,6 +282,69 @@ class StoryWorkbenchTest(unittest.TestCase):
             idea_path.write_text(json.dumps(idea, indent=2) + "\n", encoding="utf-8")
             self.assertTrue(any("Rejected idea" in finding.message for finding in audit_idea_leaks(temp_root)))
 
+    def test_short_idea_markers_are_ignored_by_leak_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            idea_path = temp_root / "data" / "ideas" / "parking" / "flood-prophet.json"
+            idea = json.loads(idea_path.read_text(encoding="utf-8"))
+            idea["id"] = "key"
+            idea["name"] = "Key"
+            idea["tags"] = ["key"]
+            idea_path.write_text(json.dumps(idea, indent=2) + "\n", encoding="utf-8")
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene["facts_in_play"].append("The key detail stays ordinary here.")
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+
+            findings = audit_idea_leaks(temp_root)
+            self.assertFalse(any(finding.code == "idea-leak" for finding in findings))
+
+    def test_long_idea_markers_are_still_detected_by_leak_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene["facts_in_play"].append("Flood Prophet rumor is now discussed at the gate.")
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+
+            findings = audit_idea_leaks(temp_root)
+            self.assertTrue(
+                any(
+                    finding.code == "idea-leak" and "Flood Prophet rumor" in finding.message
+                    for finding in findings
+                )
+            )
+
+    def test_ascii_idea_markers_use_token_boundaries(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            idea_path = temp_root / "data" / "ideas" / "parking" / "flood-prophet.json"
+            idea = json.loads(idea_path.read_text(encoding="utf-8"))
+            idea["id"] = "red-door"
+            idea["name"] = "Door"
+            idea["tags"] = []
+            idea_path.write_text(json.dumps(idea, indent=2) + "\n", encoding="utf-8")
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene["facts_in_play"].append("A shred-doorway rumor is too vague to matter.")
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+            self.assertFalse(any(finding.code == "idea-leak" for finding in audit_idea_leaks(temp_root)))
+
+            scene["facts_in_play"][-1] = "The red-door rumor is now explicit at the gate."
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+            self.assertTrue(any(finding.code == "idea-leak" for finding in audit_idea_leaks(temp_root)))
+
     def test_context_manifest_is_present_and_excludes_ideas_by_policy(self) -> None:
         context = build_scene_context("scene-001", ROOT)
         self.assertIn("## Context Manifest", context)
@@ -392,6 +456,32 @@ class StoryWorkbenchTest(unittest.TestCase):
             report, status = render_doctor(temp_root)
             self.assertEqual(status, 1)
             self.assertIn("validation errors", report)
+
+    def test_doctor_strict_ideas_fails_on_idea_leak_findings(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            for name in ("config", "data", "schemas", "templates", "docs"):
+                shutil.copytree(ROOT / name, temp_root / name)
+            shutil.copy(ROOT / "README.md", temp_root / "README.md")
+            shutil.copy(ROOT / "README.ja.md", temp_root / "README.ja.md")
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene["facts_in_play"].append("Flood Prophet rumor is now discussed at the gate.")
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+
+            report, status = render_doctor(temp_root)
+            self.assertEqual(status, 0)
+            self.assertIn("Strict idea mode: off", report)
+            self.assertIn("idea leak findings", report)
+
+            strict_report, strict_status = render_doctor(temp_root, strict_ideas=True)
+            self.assertEqual(strict_status, 1)
+            self.assertIn("Strict idea mode: on", strict_report)
+            self.assertIn("strict idea mode treats idea leak findings as failing findings", strict_report)
+
+            args = build_parser().parse_args(["doctor", "--strict-ideas"])
+            self.assertTrue(args.strict_ideas)
 
 
 if __name__ == "__main__":

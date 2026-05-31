@@ -108,3 +108,9 @@ when resuming from a new session.
 Handoff files are safe by default: parked idea details are hidden from `handoff`, checkpoint refreshes,
 and `ops/handoff/current.*`. Use `python3 tools/story.py handoff --with-ideas` only when you explicitly
 want brainstorming context.
+
+Safe handoff hides structured idea details, idea ids, and idea-related touched records, but it does not
+redact free-text checkpoint fields such as summaries, decisions, pending actions, open questions, or
+artifacts. Do not write speculative idea details into checkpoint free text unless they are safe to read
+when resuming. Keep speculative material in `data/ideas/**` and use `handoff --with-ideas` only when you
+intentionally want brainstorming context.
