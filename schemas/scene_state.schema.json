@@ -42,6 +42,18 @@
     },
     "tensions": { "type": "array", "items": { "type": "string" } },
     "facts_in_play": { "type": "array", "items": { "type": "string" } },
+    "reader_reveals": { "type": "array", "items": { "type": "string" } },
+    "character_reveals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["character", "learns"],
+        "properties": {
+          "character": { "type": "string" },
+          "learns": { "type": "string" }
+        }
+      }
+    },
     "unknowns": { "type": "array", "items": { "type": "string" } },
     "exit_conditions": { "type": "array", "items": { "type": "string" } }
   }

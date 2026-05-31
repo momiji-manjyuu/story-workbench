@@ -156,6 +156,7 @@ def load_json(path: Path) -> Any:
 
 
 def write_json(path: Path, data: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
@@ -195,6 +196,18 @@ def handoff_markdown_path(root: Path | None = None) -> Path:
 
 def handoff_json_path(root: Path | None = None) -> Path:
     return project_root(root) / "ops" / "handoff" / "current.json"
+
+
+def handoff_ideas_markdown_path(root: Path | None = None) -> Path:
+    return project_root(root) / "ops" / "handoff" / "ideas.md"
+
+
+def handoff_ideas_json_path(root: Path | None = None) -> Path:
+    return project_root(root) / "ops" / "handoff" / "ideas.json"
+
+
+def scene_delta_path(scene_id: str, root: Path | None = None) -> Path:
+    return project_root(root) / "ops" / "scene-deltas" / f"{scene_id}.json"
 
 
 def load_kind_map(root: Path | None = None) -> dict[str, KindMeta]:
@@ -358,6 +371,8 @@ def validate_references(root: Path | None = None) -> list[str]:
         elif record_kind == "idea":
             for index, target in enumerate(record.get("linked_records", [])):
                 check(target, f"linked_records[{index}]")
+            for index, target in enumerate(record.get("adopted_into", [])):
+                check(target, f"adopted_into[{index}]")
         elif record_kind == "character_state":
             check(record.get("character_id", ""), "character_id", {"character"})
             check(record.get("current_location", ""), "current_location", {"location"})
@@ -379,6 +394,10 @@ def validate_references(root: Path | None = None) -> list[str]:
             check(record.get("location", ""), "location", {"location"})
             for index, target in enumerate(record.get("present_characters", [])):
                 check(target, f"present_characters[{index}]", {"character"})
+            for index, reveal in enumerate(record.get("character_reveals", [])):
+                character = reveal.get("character")
+                if character:
+                    check(character, f"character_reveals[{index}].character", {"character"})
             for index, target in enumerate(record.get("active_threads", [])):
                 check(target, f"active_threads[{index}]", {"plot_thread"})
             for index, target in enumerate(record.get("relevant_events", [])):
@@ -760,6 +779,59 @@ def build_scene_packet(scene_id: str, root: Path | None = None) -> dict[str, Any
     }
 
 
+def add_manifest_record(rows: list[tuple[str, str]], seen: set[tuple[str, str]], kind: str, record_id: str | None) -> None:
+    if not record_id:
+        return
+    key = (kind, record_id)
+    if key in seen:
+        return
+    seen.add(key)
+    rows.append(key)
+
+
+def context_manifest_records(packet: dict[str, Any]) -> list[tuple[str, str]]:
+    rows: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    add_manifest_record(rows, seen, "config", "story_project")
+    add_manifest_record(rows, seen, "scene_state", packet["scene"].get("id"))
+    add_manifest_record(rows, seen, "episode", packet["episode"].get("id"))
+    if packet["world"]:
+        add_manifest_record(rows, seen, "world", packet["world"].get("id"))
+    if packet["world_state"]:
+        add_manifest_record(rows, seen, "world_state", packet["world_state"].get("id"))
+    add_manifest_record(rows, seen, "location", packet["location"].get("id"))
+
+    for bundle in packet["characters"]:
+        add_manifest_record(rows, seen, "character", bundle["canon"].get("id"))
+        if bundle["state"]:
+            add_manifest_record(rows, seen, "character_state", bundle["state"].get("id"))
+    for faction in packet["factions"]:
+        add_manifest_record(rows, seen, "faction", faction.get("id"))
+    for bundle in packet["location_items"]:
+        add_manifest_record(rows, seen, "item", bundle["canon"].get("id"))
+        if bundle["state"]:
+            add_manifest_record(rows, seen, "item_state", bundle["state"].get("id"))
+    for thread in packet["threads"]:
+        add_manifest_record(rows, seen, "plot_thread", thread.get("id"))
+    for event in packet["events"]:
+        add_manifest_record(rows, seen, "event", event.get("id"))
+    return rows
+
+
+def render_context_manifest(packet: dict[str, Any]) -> list[str]:
+    lines = ["## Context Manifest", "", "Included records:"]
+    lines.extend(f"- {kind}: {record_id}" for kind, record_id in context_manifest_records(packet))
+    lines.append("")
+    lines.append("Excluded by policy:")
+    lines.append("- data/ideas/**")
+    lines.append("- unrelated canon records")
+    lines.append("- resolved plot threads")
+    lines.append("- timeline events not referenced by this scene")
+    lines.append("- full biographies for off-scene characters")
+    return lines
+
+
 def packet_truth_records(packet: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
     rows: list[tuple[str, dict[str, Any]]] = []
     if packet["world"]:
@@ -779,7 +851,7 @@ def packet_truth_records(packet: dict[str, Any]) -> list[tuple[str, dict[str, An
     return deduped
 
 
-def build_scene_context(scene_id: str, root: Path | None = None) -> str:
+def build_scene_context(scene_id: str, root: Path | None = None, include_manifest: bool = True) -> str:
     packet = build_scene_packet(scene_id, root)
     config = packet["config"]
     scene = packet["scene"]
@@ -837,6 +909,9 @@ def build_scene_context(scene_id: str, root: Path | None = None) -> str:
     lines.append(f"- Location: {scene['location']}")
     lines.extend(f"- tension: {value}" for value in scene.get("tensions", []))
     lines.extend(f"- fact in play: {value}" for value in scene.get("facts_in_play", []))
+    lines.extend(f"- reader reveal: {value}" for value in scene.get("reader_reveals", []))
+    for reveal in scene.get("character_reveals", []):
+        lines.append(f"- character reveal: {reveal['character']} -> {reveal['learns']}")
     lines.extend(f"- unknown: {value}" for value in scene.get("unknowns", []))
     lines.extend(f"- exit condition: {value}" for value in scene.get("exit_conditions", []))
     for goal in scene.get("goals", []):
@@ -906,6 +981,10 @@ def build_scene_context(scene_id: str, root: Path | None = None) -> str:
         lines.append(f"- {event['date_label']} | {event['name']}")
         lines.append(f"  summary: {event['summary']}")
         lines.extend(f"  consequence: {value}" for value in event.get("consequences", []))
+
+    if include_manifest:
+        lines.append("")
+        lines.extend(render_context_manifest(packet))
 
     return "\n".join(lines) + "\n"
 
@@ -1142,7 +1221,12 @@ def semantic_sources_for_scene(packet: dict[str, Any]) -> list[tuple[str, str]]:
     return rows
 
 
-def audit_scene_draft_text(scene_id: str, draft_text: str, root: Path | None = None) -> list[AuditFinding]:
+def audit_scene_draft_text(
+    scene_id: str,
+    draft_text: str,
+    root: Path | None = None,
+    lang: str = "en",
+) -> list[AuditFinding]:
     packet = build_scene_packet(scene_id, root)
     scene = packet["scene"]
     findings: list[AuditFinding] = []
@@ -1177,22 +1261,23 @@ def audit_scene_draft_text(scene_id: str, draft_text: str, root: Path | None = N
                 )
             )
 
-    for label, source_text in semantic_sources_for_scene(packet):
-        for sentence in split_sentences(draft_text):
-            if contradiction_between(source_text, sentence):
-                findings.append(
-                    AuditFinding(
-                        severity="WARNING",
-                        scope=scene_id,
-                        code="draft-contradiction",
-                        message=f"Draft sentence may contradict the {label}: '{source_text}'",
+    if lang == "en":
+        for label, source_text in semantic_sources_for_scene(packet):
+            for sentence in split_sentences(draft_text):
+                if contradiction_between(source_text, sentence):
+                    findings.append(
+                        AuditFinding(
+                            severity="WARNING",
+                            scope=scene_id,
+                            code="draft-contradiction",
+                            message=f"Draft sentence may contradict the {label}: '{source_text}'",
+                        )
                     )
-                )
 
     return dedupe_findings(findings)
 
 
-def audit_scene_semantics(scene_id: str, root: Path | None = None) -> list[AuditFinding]:
+def audit_scene_semantics(scene_id: str, root: Path | None = None, lang: str = "en") -> list[AuditFinding]:
     packet = build_scene_packet(scene_id, root)
     scene = packet["scene"]
     world_state = packet["world_state"]
@@ -1263,32 +1348,33 @@ def audit_scene_semantics(scene_id: str, root: Path | None = None) -> list[Audit
                 )
             )
 
-        actor_goals = scene_goal_for_actor(scene, canon["id"])
-        if actor_goals and not any(has_meaning_overlap(goal, state["current_goal"]) for goal in actor_goals):
-            findings.append(
-                AuditFinding(
-                    severity="WARNING",
-                    scope=scene_id,
-                    code="goal-drift",
-                    message=(
-                        f"Scene goal for '{canon['id']}' does not line up clearly with the current_state goal. "
-                        "Confirm the shift is intentional."
-                    ),
+        if lang == "en":
+            actor_goals = scene_goal_for_actor(scene, canon["id"])
+            if actor_goals and not any(has_meaning_overlap(goal, state["current_goal"]) for goal in actor_goals):
+                findings.append(
+                    AuditFinding(
+                        severity="WARNING",
+                        scope=scene_id,
+                        code="goal-drift",
+                        message=(
+                            f"Scene goal for '{canon['id']}' does not line up clearly with the current_state goal. "
+                            "Confirm the shift is intentional."
+                        ),
+                    )
                 )
-            )
 
-        if canon.get("goals") and not any(has_meaning_overlap(state["current_goal"], goal) for goal in canon["goals"]):
-            findings.append(
-                AuditFinding(
-                    severity="NOTE",
-                    scope=scene_id,
-                    code="canon-goal-drift",
-                    message=(
-                        f"Current goal for '{canon['id']}' has little lexical overlap with canon goals. "
-                        "This may be fine, but it usually deserves an explicit transition."
-                    ),
+            if canon.get("goals") and not any(has_meaning_overlap(state["current_goal"], goal) for goal in canon["goals"]):
+                findings.append(
+                    AuditFinding(
+                        severity="NOTE",
+                        scope=scene_id,
+                        code="canon-goal-drift",
+                        message=(
+                            f"Current goal for '{canon['id']}' has little lexical overlap with canon goals. "
+                            "This may be fine, but it usually deserves an explicit transition."
+                        ),
+                    )
                 )
-            )
 
     anchors = scene_anchor_ids(packet)
     scene_pressure_lines = (
@@ -1310,21 +1396,23 @@ def audit_scene_semantics(scene_id: str, root: Path | None = None) -> list[Audit
                 )
             )
 
-        thread_text = " ".join([thread["question"], thread["summary"], *thread.get("stakes", [])])
-        if not has_meaning_overlap(thread_text, scene_pressure_text):
-            findings.append(
-                AuditFinding(
-                    severity="WARNING",
-                    scope=scene_id,
-                    code="thread-pressure-missing",
-                    message=f"Active plot thread '{thread['id']}' is not clearly expressed in tensions, facts_in_play, or unknowns.",
+        if lang == "en":
+            thread_text = " ".join([thread["question"], thread["summary"], *thread.get("stakes", [])])
+            if not has_meaning_overlap(thread_text, scene_pressure_text):
+                findings.append(
+                    AuditFinding(
+                        severity="WARNING",
+                        scope=scene_id,
+                        code="thread-pressure-missing",
+                        message=f"Active plot thread '{thread['id']}' is not clearly expressed in tensions, facts_in_play, or unknowns.",
+                    )
                 )
-            )
 
     for event in packet["events"]:
         consequence_text = " ".join(event.get("consequences", []))
         if (
-            consequence_text
+            lang == "en"
+            and consequence_text
             and "history" not in event.get("tags", [])
             and "backstory" not in event.get("tags", [])
             and not has_meaning_overlap(consequence_text, scene_pressure_text)
@@ -1355,7 +1443,7 @@ def audit_scene_semantics(scene_id: str, root: Path | None = None) -> list[Audit
             )
 
     pov_state = packet["pov_state"]
-    if pov_state:
+    if lang == "en" and pov_state:
         known_text = " ".join(pov_state.get("known_facts", []))
         for unknown in scene.get("unknowns", []):
             if has_meaning_overlap(unknown, known_text, minimum=2):
@@ -1371,13 +1459,13 @@ def audit_scene_semantics(scene_id: str, root: Path | None = None) -> list[Audit
     return dedupe_findings(findings)
 
 
-def audit_project_semantics(root: Path | None = None) -> list[AuditFinding]:
+def audit_project_semantics(root: Path | None = None, lang: str = "en") -> list[AuditFinding]:
     root = project_root(root)
     findings: list[AuditFinding] = []
     scene_ids = [record["id"] for _kind, _path, record in iter_records(root, kind="scene_state")]
 
     for scene_id in scene_ids:
-        findings.extend(audit_scene_semantics(scene_id, root))
+        findings.extend(audit_scene_semantics(scene_id, root, lang=lang))
 
     active_thread_ids: set[str] = set()
     for _kind, _path, scene in iter_records(root, kind="scene_state"):
@@ -1542,6 +1630,82 @@ def audit_project_semantics(root: Path | None = None) -> list[AuditFinding]:
     return dedupe_findings(findings)
 
 
+def idea_markers(idea: dict[str, Any]) -> list[str]:
+    markers = [idea.get("id", ""), idea.get("name", "")]
+    markers.extend(tag for tag in idea.get("tags", []) if len(tag) >= 4)
+    return unique_strings([marker for marker in markers if marker])
+
+
+def marker_in_record(marker: str, record: dict[str, Any]) -> bool:
+    haystack = " ".join(flatten_strings(record)).casefold()
+    return marker.casefold() in haystack
+
+
+def audit_idea_leaks(root: Path | None = None) -> list[AuditFinding]:
+    root = project_root(root)
+    findings: list[AuditFinding] = []
+    target_kinds = [
+        "world",
+        "character",
+        "location",
+        "faction",
+        "item",
+        "world_state",
+        "character_state",
+        "item_state",
+        "scene_state",
+        "plot_thread",
+        "episode",
+        "event",
+    ]
+    target_records: list[tuple[str, Path, dict[str, Any]]] = []
+    for kind in target_kinds:
+        target_records.extend(iter_records(root, kind=kind))
+
+    for _kind, _path, idea in iter_records(root, kind="idea"):
+        status = idea.get("status")
+        if status == "adopted":
+            if not idea.get("adopted_into"):
+                findings.append(
+                    AuditFinding(
+                        severity="WARNING",
+                        scope=idea.get("id", ""),
+                        code="idea-adoption-missing-target",
+                        message=f"Adopted idea '{idea.get('id', '')}' has no adopted_into records.",
+                    )
+                )
+            continue
+        if status not in {"seed", "exploring", "parked", "rejected"}:
+            continue
+
+        for marker in idea_markers(idea):
+            for record_kind, _record_path, record in target_records:
+                if not marker_in_record(marker, record):
+                    continue
+                severity = "WARNING"
+                if status == "rejected":
+                    message = (
+                        f"Rejected idea '{idea['id']}' marker '{marker}' appears in "
+                        f"{record_kind} '{record.get('id', '')}'. Remove it or record a new adoption decision."
+                    )
+                else:
+                    message = (
+                        f"Parked idea '{idea['id']}' marker '{marker}' appears in "
+                        f"{record_kind} '{record.get('id', '')}'. Adopt it first or move the mention back to data/ideas."
+                    )
+                findings.append(
+                    AuditFinding(
+                        severity=severity,
+                        scope=record.get("id", ""),
+                        code="idea-leak",
+                        message=message,
+                    )
+                )
+                break
+
+    return dedupe_findings(findings)
+
+
 def render_findings(title: str, findings: list[AuditFinding]) -> str:
     findings = dedupe_findings(findings)
     lines = [title, ""]
@@ -1567,17 +1731,27 @@ def render_findings(title: str, findings: list[AuditFinding]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_audit(scene_id: str | None = None, draft_path: Path | None = None, root: Path | None = None) -> str:
+def render_audit(
+    scene_id: str | None = None,
+    draft_path: Path | None = None,
+    root: Path | None = None,
+    lang: str = "en",
+    include_idea_leaks: bool = False,
+) -> str:
     root = project_root(root)
     if scene_id:
-        findings = audit_scene_semantics(scene_id, root)
+        findings = audit_scene_semantics(scene_id, root, lang=lang)
         if draft_path:
-            findings.extend(audit_scene_draft_text(scene_id, draft_path.read_text(encoding="utf-8"), root))
+            findings.extend(audit_scene_draft_text(scene_id, draft_path.read_text(encoding="utf-8"), root, lang=lang))
+        if include_idea_leaks:
+            findings.extend(audit_idea_leaks(root))
         label = f"# Semantic Audit: {scene_id}"
         if draft_path:
             label = f"{label} ({draft_path.name})"
         return render_findings(label, findings)
-    return render_findings("# Semantic Audit: project", audit_project_semantics(root))
+    findings = audit_idea_leaks(root) if include_idea_leaks else audit_project_semantics(root, lang=lang)
+    title = "# Idea Leak Audit" if include_idea_leaks else "# Semantic Audit: project"
+    return render_findings(title, findings)
 
 
 def validate_record_ids(record_ids: list[str], root: Path | None = None, expected_kind: str | None = None) -> None:
@@ -1605,27 +1779,43 @@ def active_idea_records(root: Path | None = None) -> list[dict[str, Any]]:
     return sorted(records, key=lambda record: record.get("last_touched", ""), reverse=True)
 
 
-def build_handoff_snapshot(root: Path | None = None) -> dict[str, Any]:
+def build_handoff_snapshot(root: Path | None = None, include_ideas: bool = False) -> dict[str, Any]:
     root = project_root(root)
     config = load_project_config(root)
     checkpoint_rows = load_checkpoint_rows(root)
-    latest_checkpoint = checkpoint_rows[0][1] if checkpoint_rows else None
+    latest_checkpoint = dict(checkpoint_rows[0][1]) if checkpoint_rows else None
+    if latest_checkpoint and not include_ideas:
+        _records_by_id, checkpoint_kinds_by_id = build_indexes(root)
+        latest_checkpoint["idea_ids"] = []
+        latest_checkpoint["touched_records"] = [
+            record_id
+            for record_id in latest_checkpoint.get("touched_records", [])
+            if "idea" not in checkpoint_kinds_by_id.get(record_id, [])
+        ]
     scene = None
     if latest_checkpoint and latest_checkpoint.get("scene_id"):
         scene = get_record("scene_state", latest_checkpoint["scene_id"], root)
 
-    all_ideas = active_idea_records(root)
-    idea_lookup = {record["id"]: record for record in all_ideas}
-    highlighted_ids = latest_checkpoint.get("idea_ids", []) if latest_checkpoint else []
-    highlighted_ideas = [idea_lookup[idea_id] for idea_id in highlighted_ids if idea_id in idea_lookup]
-    extra_ideas = [record for record in all_ideas if record["id"] not in {idea["id"] for idea in highlighted_ideas}]
-    ideas = highlighted_ideas + extra_ideas[: max(0, 5 - len(highlighted_ideas))]
+    ideas: list[dict[str, Any]] = []
+    if include_ideas:
+        all_ideas = active_idea_records(root)
+        idea_lookup = {record["id"]: record for record in all_ideas}
+        highlighted_ids = latest_checkpoint.get("idea_ids", []) if latest_checkpoint else []
+        highlighted_ideas = [idea_lookup[idea_id] for idea_id in highlighted_ids if idea_id in idea_lookup]
+        highlighted_id_set = {idea["id"] for idea in highlighted_ideas}
+        extra_ideas = [record for record in all_ideas if record["id"] not in highlighted_id_set]
+        ideas = highlighted_ideas + extra_ideas[: max(0, 5 - len(highlighted_ideas))]
 
     recent_decisions: list[str] = []
     for _path, checkpoint in checkpoint_rows[:3]:
         recent_decisions.extend(checkpoint.get("decisions", []))
 
     touched_records = latest_checkpoint.get("touched_records", []) if latest_checkpoint else []
+    if not include_ideas and touched_records:
+        _records_by_id, kinds_by_id = build_indexes(root)
+        touched_records = [
+            record_id for record_id in touched_records if "idea" not in kinds_by_id.get(record_id, [])
+        ]
     artifacts = latest_checkpoint.get("artifacts", []) if latest_checkpoint else []
     open_questions = latest_checkpoint.get("open_questions", []) if latest_checkpoint else []
     pending_actions = latest_checkpoint.get("pending_actions", []) if latest_checkpoint else []
@@ -1642,6 +1832,7 @@ def build_handoff_snapshot(root: Path | None = None) -> dict[str, Any]:
         "touched_records": touched_records,
         "artifacts": artifacts,
         "ideas": ideas,
+        "include_ideas": include_ideas,
         "recent_checkpoint_ids": [payload["id"] for _path, payload in checkpoint_rows[:5]],
     }
 
@@ -1727,7 +1918,11 @@ def render_handoff_snapshot(snapshot: dict[str, Any]) -> str:
 
     lines.append("")
     lines.append("## Parked Ideas")
-    if not snapshot["ideas"]:
+    if not snapshot.get("include_ideas"):
+        lines.append(
+            "- Idea details are hidden by default. Run `python3 tools/story.py handoff --with-ideas` for brainstorming context."
+        )
+    elif not snapshot["ideas"]:
         lines.append("- none")
     else:
         for idea in snapshot["ideas"]:
@@ -1749,18 +1944,22 @@ def render_handoff_snapshot(snapshot: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def refresh_handoff(root: Path | None = None) -> tuple[Path, Path]:
+def refresh_handoff(root: Path | None = None, include_ideas: bool = False) -> tuple[Path, Path]:
     root = project_root(root)
-    snapshot = build_handoff_snapshot(root)
+    snapshot = build_handoff_snapshot(root, include_ideas=False)
     markdown_path = handoff_markdown_path(root)
     json_path = handoff_json_path(root)
     write_text(markdown_path, render_handoff_snapshot(snapshot))
     write_json(json_path, snapshot)
+    if include_ideas:
+        idea_snapshot = build_handoff_snapshot(root, include_ideas=True)
+        write_text(handoff_ideas_markdown_path(root), render_handoff_snapshot(idea_snapshot))
+        write_json(handoff_ideas_json_path(root), idea_snapshot)
     return markdown_path, json_path
 
 
-def render_handoff(root: Path | None = None) -> str:
-    return render_handoff_snapshot(build_handoff_snapshot(root))
+def render_handoff(root: Path | None = None, include_ideas: bool = False) -> str:
+    return render_handoff_snapshot(build_handoff_snapshot(root, include_ideas=include_ideas))
 
 
 def create_checkpoint(
@@ -1864,6 +2063,219 @@ def capture_idea(
     return target_path
 
 
+def find_record_path(kind: str, record_id: str, root: Path | None = None) -> Path:
+    for found_kind, path, record in iter_records(root, kind=kind):
+        if found_kind == kind and record.get("id") == record_id:
+            return path
+    raise ProjectError(f"Record not found: kind={kind} id={record_id}")
+
+
+def adopt_idea(
+    idea_id: str,
+    adopted_into: list[str],
+    decision: str,
+    root: Path | None = None,
+) -> Path:
+    root = project_root(root)
+    idea_path = find_record_path("idea", idea_id, root)
+    validate_record_ids(adopted_into, root)
+    payload = load_json(idea_path)
+    touched_at = now_iso()
+    payload["status"] = "adopted"
+    payload["adopted_into"] = unique_strings(adopted_into)
+    payload["adoption_decision"] = decision
+    payload["last_touched"] = touched_at
+    payload["closed_at"] = touched_at
+    payload.pop("rejected_reason", None)
+    write_json(idea_path, payload)
+    refresh_handoff(root)
+    return idea_path
+
+
+def reject_idea(idea_id: str, reason: str, root: Path | None = None) -> Path:
+    root = project_root(root)
+    idea_path = find_record_path("idea", idea_id, root)
+    payload = load_json(idea_path)
+    touched_at = now_iso()
+    payload["status"] = "rejected"
+    payload["rejected_reason"] = reason
+    payload["last_touched"] = touched_at
+    payload["closed_at"] = touched_at
+    payload.pop("adopted_into", None)
+    payload.pop("adoption_decision", None)
+    write_json(idea_path, payload)
+    refresh_handoff(root)
+    return idea_path
+
+
+def create_scene_delta(
+    scene_id: str,
+    output: Path | None = None,
+    force: bool = False,
+    root: Path | None = None,
+) -> Path:
+    root = project_root(root)
+    scene = get_record("scene_state", scene_id, root)
+    target_path = output or scene_delta_path(scene_id, root)
+    if not target_path.is_absolute():
+        target_path = root / target_path
+    if target_path.exists() and not force:
+        raise ProjectError(f"Refusing to overwrite existing file: {target_path}")
+
+    payload = {
+        "scene_id": scene_id,
+        "created_at": now_iso(),
+        "outcome": "",
+        "state_changes": [],
+        "plot_moves": [],
+        "reader_reveals": [],
+        "character_reveals": [],
+        "timeline_events_to_add": [],
+        "notes": [],
+        "reference": {
+            "scene_name": scene.get("name", ""),
+            "scene_summary": scene.get("summary", ""),
+            "active_threads": scene.get("active_threads", []),
+            "present_characters": scene.get("present_characters", []),
+        },
+    }
+    write_json(target_path, payload)
+    return target_path
+
+
+def render_threads_overview(root: Path | None = None) -> str:
+    root = project_root(root)
+    scenes = [record for _kind, _path, record in iter_records(root, kind="scene_state")]
+    scenes.sort(key=lambda record: (record.get("sort_key", 0), record.get("id", "")))
+    references: dict[str, list[dict[str, Any]]] = {}
+    for scene in scenes:
+        for thread_id in scene.get("active_threads", []):
+            references.setdefault(thread_id, []).append(scene)
+
+    lines = ["# Plot Threads", ""]
+    threads = [record for _kind, _path, record in iter_records(root, kind="plot_thread")]
+    threads.sort(key=lambda record: (record.get("status", ""), record.get("id", "")))
+    if not threads:
+        lines.append("- none")
+        return "\n".join(lines) + "\n"
+
+    for thread in threads:
+        seen_scenes = references.get(thread["id"], [])
+        scene_ids = [scene["id"] for scene in seen_scenes]
+        last_seen = scene_ids[-1] if scene_ids else "none"
+        lines.append(f"## {thread['id']} | {thread['name']}")
+        lines.append(f"- status: {thread['status']}")
+        lines.append(f"- thread_type: {thread['thread_type']}")
+        lines.append(f"- referenced scenes: {', '.join(scene_ids) if scene_ids else 'none'}")
+        lines.append(f"- last seen scene: {last_seen}")
+        if not thread.get("resolution_criteria"):
+            lines.append("- warning: resolution_criteria is empty")
+        if thread.get("status") in {"open", "advancing"} and not scene_ids:
+            lines.append("- warning: open thread is not referenced by any scene")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def find_doc_link_warnings(root: Path | None = None) -> list[AuditFinding]:
+    root = project_root(root)
+    candidates = [root / "README.md", root / "README.ja.md"]
+    docs_dir = root / "docs"
+    if docs_dir.exists():
+        candidates.extend(sorted(docs_dir.glob("*.md")))
+    findings: list[AuditFinding] = []
+    for path in candidates:
+        if not path.exists():
+            continue
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if "/Users/" not in line:
+                continue
+            findings.append(
+                AuditFinding(
+                    severity="WARNING",
+                    scope=str(path.relative_to(root)),
+                    code="local-absolute-doc-link",
+                    message=f"{path.relative_to(root)}:{line_number} contains a local /Users/ path.",
+                )
+            )
+    return findings
+
+
+def audit_templates(root: Path | None = None) -> list[AuditFinding]:
+    root = project_root(root)
+    findings: list[AuditFinding] = []
+    for kind, meta in load_kind_map(root).items():
+        try:
+            template = load_json(meta.template)
+            schema = load_json(meta.schema)
+        except (FileNotFoundError, json.JSONDecodeError) as exc:
+            findings.append(
+                AuditFinding(
+                    severity="ERROR",
+                    scope=kind,
+                    code="template-invalid-json",
+                    message=f"Template or schema for kind '{kind}' could not be parsed: {exc}",
+                )
+            )
+            continue
+        for key in schema.get("required", []):
+            if key not in template:
+                findings.append(
+                    AuditFinding(
+                        severity="WARNING",
+                        scope=kind,
+                        code="template-missing-required-key",
+                        message=f"Template '{meta.template.relative_to(root)}' is missing required key '{key}'.",
+                    )
+                )
+    return findings
+
+
+def render_doctor(root: Path | None = None) -> tuple[str, int]:
+    root = project_root(root)
+    validation_errors = validate_project(root)
+    semantic_findings = [] if validation_errors else audit_project_semantics(root)
+    idea_findings = [] if validation_errors else audit_idea_leaks(root)
+    doc_findings = find_doc_link_warnings(root)
+    template_findings = audit_templates(root)
+
+    semantic_errors = [finding for finding in semantic_findings if finding.severity == "ERROR"]
+    template_errors = [finding for finding in template_findings if finding.severity == "ERROR"]
+    status = 1 if validation_errors or semantic_errors or template_errors else 0
+
+    lines = ["# Doctor", ""]
+    lines.append(
+        "Summary: "
+        f"{len(validation_errors)} validation errors, "
+        f"{len(semantic_errors)} semantic errors, "
+        f"{sum(1 for finding in semantic_findings if finding.severity == 'WARNING')} semantic warnings, "
+        f"{len(idea_findings)} idea leak findings, "
+        f"{len(doc_findings)} doc link warnings, "
+        f"{len(template_findings)} template findings."
+    )
+
+    lines.append("")
+    lines.append("## Validation")
+    if validation_errors:
+        lines.extend(f"- {message}" for message in validation_errors)
+    else:
+        lines.append("- ok")
+
+    for title, findings in (
+        ("## Semantic Audit", semantic_findings),
+        ("## Idea Leak Audit", idea_findings),
+        ("## Documentation Links", doc_findings),
+        ("## Templates", template_findings),
+    ):
+        lines.append("")
+        lines.append(title)
+        if not findings:
+            lines.append("- ok")
+        else:
+            lines.extend(f"- [{finding.severity}] [{finding.code}] {finding.message}" for finding in findings)
+
+    return "\n".join(lines) + "\n", status
+
+
 def make_stub(kind: str, record_id: str, name: str | None, force: bool, root: Path | None = None) -> Path:
     root = project_root(root)
     kind_map = load_kind_map(root)
@@ -1911,10 +2323,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     context_parser = subparsers.add_parser("context", help="Assemble a scene context bundle")
     context_parser.add_argument("scene_id")
+    context_parser.add_argument("--no-manifest", action="store_true", help="Suppress the context manifest section.")
 
     audit_parser = subparsers.add_parser("audit", help="Run semantic continuity audit")
     audit_parser.add_argument("scene_id", nargs="?")
     audit_parser.add_argument("--draft", type=Path)
+    audit_parser.add_argument("--ideas", action="store_true", help="Run the project-level idea leak audit.")
+    audit_parser.add_argument("--lang", choices=["en", "ja"], default="en")
 
     draft_parser = subparsers.add_parser("draft", help="Generate a scene drafting kit or prose seed")
     draft_parser.add_argument("scene_id")
@@ -1923,6 +2338,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     handoff_parser = subparsers.add_parser("handoff", help="Render the latest handoff snapshot")
     handoff_parser.add_argument("--refresh", action="store_true")
+    handoff_parser.add_argument("--with-ideas", action="store_true", help="Include parked idea details in rendered output.")
 
     checkpoint_parser = subparsers.add_parser(
         "checkpoint",
@@ -1960,6 +2376,24 @@ def build_parser() -> argparse.ArgumentParser:
     idea_parser.add_argument("--next-probe", default="")
     idea_parser.add_argument("--force", action="store_true")
 
+    adopt_parser = subparsers.add_parser("adopt", help="Mark an idea as adopted into stable project records")
+    adopt_parser.add_argument("id")
+    adopt_parser.add_argument("--into", action="append", required=True)
+    adopt_parser.add_argument("--decision", required=True)
+
+    reject_parser = subparsers.add_parser("reject", help="Mark an idea as rejected with a reason")
+    reject_parser.add_argument("id")
+    reject_parser.add_argument("--reason", required=True)
+
+    delta_parser = subparsers.add_parser("delta", help="Create a post-scene delta stub")
+    delta_parser.add_argument("scene_id")
+    delta_parser.add_argument("--output", type=Path)
+    delta_parser.add_argument("--force", action="store_true")
+
+    subparsers.add_parser("threads", help="Show plot thread status and scene references")
+
+    subparsers.add_parser("doctor", help="Run validation, semantic audits, idea leak checks, docs, and template checks")
+
     stub_parser = subparsers.add_parser("stub", help="Create a stub record from a template")
     stub_parser.add_argument("kind")
     stub_parser.add_argument("id")
@@ -1995,11 +2429,11 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if args.command == "context":
-            print(build_scene_context(args.scene_id), end="")
+            print(build_scene_context(args.scene_id, include_manifest=not args.no_manifest), end="")
             return 0
 
         if args.command == "audit":
-            print(render_audit(args.scene_id, args.draft), end="")
+            print(render_audit(args.scene_id, args.draft, lang=args.lang, include_idea_leaks=args.ideas), end="")
             return 0
 
         if args.command == "draft":
@@ -2013,8 +2447,8 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "handoff":
             if args.refresh:
-                refresh_handoff()
-            print(render_handoff(), end="")
+                refresh_handoff(include_ideas=args.with_ideas)
+            print(render_handoff(include_ideas=args.with_ideas), end="")
             return 0
 
         if args.command == "checkpoint":
@@ -2050,6 +2484,30 @@ def main(argv: list[str] | None = None) -> int:
             )
             print(path)
             return 0
+
+        if args.command == "adopt":
+            path = adopt_idea(args.id, adopted_into=args.into, decision=args.decision)
+            print(path)
+            return 0
+
+        if args.command == "reject":
+            path = reject_idea(args.id, reason=args.reason)
+            print(path)
+            return 0
+
+        if args.command == "delta":
+            path = create_scene_delta(args.scene_id, output=args.output, force=args.force)
+            print(path)
+            return 0
+
+        if args.command == "threads":
+            print(render_threads_overview(), end="")
+            return 0
+
+        if args.command == "doctor":
+            report, status = render_doctor()
+            print(report, end="")
+            return status
 
         if args.command == "stub":
             path = make_stub(args.kind, args.id, args.name, args.force)

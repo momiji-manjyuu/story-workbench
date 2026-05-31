@@ -23,6 +23,10 @@
     "questions": { "type": "array", "items": { "type": "string" } },
     "possible_uses": { "type": "array", "items": { "type": "string" } },
     "linked_records": { "type": "array", "items": { "type": "string" } },
+    "adopted_into": { "type": "array", "items": { "type": "string" } },
+    "adoption_decision": { "type": "string" },
+    "rejected_reason": { "type": "string" },
+    "closed_at": { "type": "string" },
     "next_probe": { "type": "string" },
     "tags": { "type": "array", "items": { "type": "string" } },
     "last_touched": { "type": "string" }

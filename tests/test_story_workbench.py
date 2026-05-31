@@ -13,15 +13,21 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from story_workbench.cli import (
     ProjectError,
+    adopt_idea,
+    audit_idea_leaks,
     audit_project_semantics,
     audit_scene_draft_text,
     audit_scene_semantics,
     build_scene_context,
     capture_idea,
+    create_scene_delta,
     create_checkpoint,
     list_records,
     make_stub,
+    reject_idea,
+    render_doctor,
     render_handoff,
+    render_threads_overview,
     render_scene_draft,
     search_records,
     validate_project,
@@ -110,7 +116,12 @@ class StoryWorkbenchTest(unittest.TestCase):
             self.assertTrue(checkpoint_paths.checkpoint.exists())
             handoff = render_handoff(temp_root)
             self.assertIn("Locked the opening scene pressure", handoff)
-            self.assertIn("flood-prophet-temp", handoff)
+            self.assertNotIn("flood-prophet-temp", handoff)
+            self.assertIn("Idea details are hidden by default", handoff)
+            self.assertNotIn("flood-prophet-temp", checkpoint_paths.handoff_markdown.read_text(encoding="utf-8"))
+            self.assertNotIn("flood-prophet-temp", checkpoint_paths.handoff_json.read_text(encoding="utf-8"))
+            handoff_with_ideas = render_handoff(temp_root, include_ideas=True)
+            self.assertIn("flood-prophet-temp", handoff_with_ideas)
             self.assertIn("scene-001", handoff)
             self.assertIn("Quality gate:", handoff)
 
@@ -194,6 +205,193 @@ class StoryWorkbenchTest(unittest.TestCase):
                     decisions=["Tried to checkpoint a broken scene."],
                     root=temp_root,
                 )
+
+    def test_handoff_with_ideas_includes_sample_idea(self) -> None:
+        handoff = render_handoff(ROOT, include_ideas=True)
+        self.assertIn("flood-prophet", handoff)
+        self.assertIn("A witness figure", handoff)
+
+    def test_adopt_and_reject_idea_update_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            adopt_idea(
+                "flood-prophet",
+                adopted_into=["ledger-theft"],
+                decision="Adopted as an in-world rumor network, not one person.",
+                root=temp_root,
+            )
+            idea_path = temp_root / "data" / "ideas" / "parking" / "flood-prophet.json"
+            adopted = json.loads(idea_path.read_text(encoding="utf-8"))
+            self.assertEqual(adopted["status"], "adopted")
+            self.assertEqual(adopted["adopted_into"], ["ledger-theft"])
+            self.assertIn("rumor network", adopted["adoption_decision"])
+            self.assertIn("closed_at", adopted)
+            self.assertIn("last_touched", adopted)
+
+            reject_idea("flood-prophet", reason="Too similar to the Office rumor mechanism.", root=temp_root)
+            rejected = json.loads(idea_path.read_text(encoding="utf-8"))
+            self.assertEqual(rejected["status"], "rejected")
+            self.assertIn("Office rumor", rejected["rejected_reason"])
+            self.assertIn("closed_at", rejected)
+            self.assertNotIn("adopted_into", rejected)
+
+    def test_adopt_reject_errors_for_unknown_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            with self.assertRaises(ProjectError):
+                adopt_idea("missing-idea", adopted_into=["ledger-theft"], decision="Nope.", root=temp_root)
+            with self.assertRaises(ProjectError):
+                adopt_idea("flood-prophet", adopted_into=["missing-record"], decision="Nope.", root=temp_root)
+            with self.assertRaises(ProjectError):
+                reject_idea("missing-idea", reason="Nope.", root=temp_root)
+
+    def test_idea_leak_audit_catches_parked_and_rejected_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene["facts_in_play"].append("Flood Prophet rumor is now discussed at the gate.")
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+
+            findings = audit_idea_leaks(temp_root)
+            self.assertTrue(any(finding.code == "idea-leak" and "Parked idea" in finding.message for finding in findings))
+
+            idea_path = temp_root / "data" / "ideas" / "parking" / "flood-prophet.json"
+            idea = json.loads(idea_path.read_text(encoding="utf-8"))
+            idea["status"] = "adopted"
+            idea["adopted_into"] = ["scene-001"]
+            idea_path.write_text(json.dumps(idea, indent=2) + "\n", encoding="utf-8")
+            self.assertFalse(any(finding.code == "idea-leak" for finding in audit_idea_leaks(temp_root)))
+
+            idea["status"] = "adopted"
+            idea.pop("adopted_into")
+            idea_path.write_text(json.dumps(idea, indent=2) + "\n", encoding="utf-8")
+            self.assertTrue(any(finding.code == "idea-adoption-missing-target" for finding in audit_idea_leaks(temp_root)))
+
+            idea["status"] = "rejected"
+            idea_path.write_text(json.dumps(idea, indent=2) + "\n", encoding="utf-8")
+            self.assertTrue(any("Rejected idea" in finding.message for finding in audit_idea_leaks(temp_root)))
+
+    def test_context_manifest_is_present_and_excludes_ideas_by_policy(self) -> None:
+        context = build_scene_context("scene-001", ROOT)
+        self.assertIn("## Context Manifest", context)
+        self.assertIn("- scene_state: scene-001", context)
+        self.assertIn("- plot_thread: ledger-theft", context)
+        self.assertIn("- data/ideas/**", context)
+        self.assertNotIn("A witness figure that may be person", context)
+
+    def test_scene_delta_creation(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            path = create_scene_delta("scene-001", root=temp_root)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["scene_id"], "scene-001")
+            self.assertEqual(payload["outcome"], "")
+            self.assertEqual(payload["reference"]["scene_name"], "Dawn Inspection at Tidegate")
+            with self.assertRaises(ProjectError):
+                create_scene_delta("scene-001", root=temp_root)
+            with self.assertRaises(ProjectError):
+                create_scene_delta("missing-scene", root=temp_root)
+
+    def test_reader_and_character_reveals_validate_and_render(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "schemas", temp_root / "schemas")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene["reader_reveals"] = ["The ledger may prove a living heir."]
+            scene["character_reveals"] = [{"character": "jun-alder", "learns": "Mira is carrying a record he was not cleared to see."}]
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+
+            self.assertEqual(validate_project(temp_root), [])
+            context = build_scene_context("scene-001", temp_root)
+            self.assertIn("reader reveal: The ledger may prove a living heir.", context)
+            self.assertIn("character reveal: jun-alder -> Mira is carrying", context)
+
+            scene["character_reveals"] = [{"character": "missing-character", "learns": "A bad fact."}]
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+            self.assertTrue(any("character_reveals[0].character" in error for error in validate_project(temp_root)))
+
+    def test_threads_overview_lists_threads_and_warnings(self) -> None:
+        overview = render_threads_overview(ROOT)
+        self.assertIn("ledger-theft", overview)
+        self.assertIn("referenced scenes: scene-001", overview)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+            thread_path = temp_root / "data" / "plot" / "threads" / "orphan-thread.json"
+            thread = json.loads((temp_root / "data" / "plot" / "threads" / "ledger-theft.json").read_text(encoding="utf-8"))
+            thread["id"] = "orphan-thread"
+            thread["name"] = "Orphan Thread"
+            thread["status"] = "open"
+            thread["resolution_criteria"] = []
+            thread_path.write_text(json.dumps(thread, indent=2) + "\n", encoding="utf-8")
+
+            overview = render_threads_overview(temp_root)
+            self.assertIn("orphan-thread", overview)
+            self.assertIn("open thread is not referenced", overview)
+            self.assertIn("resolution_criteria is empty", overview)
+
+    def test_audit_lang_ja_skips_english_lexical_contradiction_but_keeps_structure(self) -> None:
+        ja_findings = audit_scene_draft_text(
+            "scene-001",
+            "The flood tunnel grates stood open at dawn while the queue drifted forward.",
+            ROOT,
+            lang="ja",
+        )
+        self.assertFalse(any(finding.code == "draft-contradiction" for finding in ja_findings))
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            shutil.copytree(ROOT / "config", temp_root / "config")
+            shutil.copytree(ROOT / "data", temp_root / "data")
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene["present_characters"] = ["jun-alder"]
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+
+            findings = audit_scene_semantics("scene-001", temp_root, lang="ja")
+            self.assertTrue(any(finding.code == "pov-missing" for finding in findings))
+
+    def test_doctor_detects_doc_links_and_validation_errors(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            for name in ("config", "data", "schemas", "templates", "docs"):
+                shutil.copytree(ROOT / name, temp_root / name)
+            shutil.copy(ROOT / "README.md", temp_root / "README.md")
+            shutil.copy(ROOT / "README.ja.md", temp_root / "README.ja.md")
+
+            readme = temp_root / "README.md"
+            readme.write_text(readme.read_text(encoding="utf-8") + "\nBroken: /Users/foo/story-workbench/README.md\n", encoding="utf-8")
+            report, status = render_doctor(temp_root)
+            self.assertEqual(status, 0)
+            self.assertIn("local-absolute-doc-link", report)
+
+            scene_path = temp_root / "data" / "state" / "scenes" / "scene-001.json"
+            scene = json.loads(scene_path.read_text(encoding="utf-8"))
+            scene.pop("summary")
+            scene_path.write_text(json.dumps(scene, indent=2) + "\n", encoding="utf-8")
+            report, status = render_doctor(temp_root)
+            self.assertEqual(status, 1)
+            self.assertIn("validation errors", report)
 
 
 if __name__ == "__main__":

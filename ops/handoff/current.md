@@ -1,6 +1,6 @@
 # Current Handoff
 
-- Generated: 2026-03-14T00:00:09+09:00
+- Generated: 2026-05-31T20:47:28+09:00
 - Project: Story Workbench Seed
 - Premise: A canal city taxes written memory, and a stolen ledger may expose a hidden heir.
 - Latest checkpoint: checkpoint-20260314T000009+0900-add-chronology-and-item-tracking-to-samp
@@ -33,9 +33,7 @@
 - scene-001
 
 ## Parked Ideas
-- flood-prophet [parked]: A witness figure that may be person, office myth, or distributed legend.
-  spark: This could let the city speak back through rumor and bureaucracy.
-  question: Is the prophet a person or a title?
+- Idea details are hidden by default. Run `python3 tools/story.py handoff --with-ideas` for brainstorming context.
 
 ## Resume
 - python3 tools/story.py validate
