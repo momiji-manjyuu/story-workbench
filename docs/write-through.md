@@ -25,6 +25,23 @@ python3 tools/story.py idea flood-prophet \
   --link memory-tithe-city
 ```
 
+Adopt or reject a parked idea once the decision is no longer speculative:
+
+```bash
+python3 tools/story.py adopt flood-prophet \
+  --into ledger-theft \
+  --decision "Adopted as an in-world rumor network, not one person."
+
+python3 tools/story.py reject flood-prophet \
+  --reason "Too similar to the Office rumor mechanism."
+```
+
+Create a post-scene delta stub before updating state:
+
+```bash
+python3 tools/story.py delta scene-001
+```
+
 Capture the turn's outcome and next step:
 
 ```bash
@@ -41,18 +58,25 @@ Read the current resume state:
 python3 tools/story.py handoff
 ```
 
+`handoff` is safe by default and hides parked idea details. Use `python3 tools/story.py handoff --with-ideas`
+only when you explicitly want brainstorming context. A `--refresh --with-ideas` run keeps
+`ops/handoff/current.*` safe and writes the idea-inclusive snapshot to `ops/handoff/ideas.*`.
+
 ## Files
 
 - `ops/checkpoints/*.json`: immutable turn-level snapshots
 - `ops/handoff/current.md`: human-readable resume note
 - `ops/handoff/current.json`: machine-readable resume note
+- `ops/handoff/ideas.md` and `ops/handoff/ideas.json`: optional idea-inclusive handoff output
+- `ops/scene-deltas/*.json`: post-scene update stubs
 
 ## Minimal habit
 
 1. Change story data.
 2. Run `validate`.
 3. Run `audit`.
-4. Run `checkpoint`.
+4. Run `audit --ideas` if parked ideas were discussed.
+5. Run `checkpoint`.
 
 If a turn ends without `checkpoint`, the next session has to reconstruct intent from raw diffs, which
 is avoidable.

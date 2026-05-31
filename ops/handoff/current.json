@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-14T00:00:09+09:00",
+  "generated_at": "2026-05-31T20:47:28+09:00",
   "project_name": "Story Workbench Seed",
   "premise": "A canal city taxes written memory, and a stolen ledger may expose a hidden heir.",
   "latest_checkpoint": {
@@ -95,26 +95,8 @@
     "scene-001"
   ],
   "artifacts": [],
-  "ideas": [
-    {
-      "id": "flood-prophet",
-      "kind": "idea",
-      "name": "Flood Prophet rumor",
-      "status": "parked",
-      "summary": "A witness figure that may be person, office myth, or distributed legend.",
-      "spark": "This could let the city speak back through rumor and bureaucracy.",
-      "questions": [
-        "Is the prophet a person or a title?"
-      ],
-      "possible_uses": [],
-      "linked_records": [
-        "memory-tithe-city"
-      ],
-      "next_probe": "",
-      "tags": [],
-      "last_touched": "2026-03-12T23:46:49+09:00"
-    }
-  ],
+  "ideas": [],
+  "include_ideas": false,
   "recent_checkpoint_ids": [
     "checkpoint-20260314T000009+0900-add-chronology-and-item-tracking-to-samp",
     "checkpoint-20260312T234710+0900-installed-write-through-workflow"

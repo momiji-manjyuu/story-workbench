@@ -2,6 +2,12 @@
 
 The project uses a four-layer model so retrieval stays narrow and updates stay honest.
 
+## Project boundary
+
+A workspace represents one story project. Records are not partitioned by `project_id`; the toolchain
+assumes everything under `data/` belongs to the same story. Use another repository or workspace for a
+different story instead of mixing projects in one data tree.
+
 ## 1. Canon
 
 `data/canon/` holds stable facts:
